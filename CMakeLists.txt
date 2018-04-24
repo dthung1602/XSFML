@@ -5,3 +5,5 @@ set(CMAKE_CXX_STANDARD 11)
 
 file(GLOB FILES *)
 add_library(XSFML ${FILES})
+
+add_executable(foo foo.cpp) # dummy exe for testing

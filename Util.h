@@ -5,10 +5,14 @@
 #ifndef XSFML_UTIL_H
 #define XSFML_UTIL_H
 
+#include <string>
+#include <fstream>
 
-class Util {
+namespace xsf {
+    std::string getPath();
 
-};
+    std::fstream openFile(const std::string &fileName);
+}
 
 
 #endif //XSFML_UTIL_H
