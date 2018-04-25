@@ -8,14 +8,21 @@
 #include <string>
 #include <unordered_map>
 #include <bits/shared_ptr.h>
+#include <vector>
 
 namespace xsf {
+    enum class ResourceLoadTime {
+        ERROR, START_UP, MANUAL, ON_DEMAND
+    };
 
     template<typename ResourceType>
     class BaseResourceManager {
 
         using ResourcePtr = std::shared_ptr<ResourceType>;
         using ResourceWPtr = std::weak_ptr<ResourceType>;
+        template <typename T>
+        using Container = std::vector<T>;
+        using NameContainer = Container<std::string>;
 
     public:
 
@@ -23,11 +30,11 @@ namespace xsf {
 
         virtual ~BaseResourceManager();
 
-        ResourcePtr getResource(const std::string &name);
+        bool load(const std::string &name);
 
-        enum class ResourceLoadTime {
-            ERROR, START_UP, MANUAL, ON_DEMAND
-        };
+        bool loadMultiple(const NameContainer &container);
+
+        ResourcePtr getResource(const std::string &name);
 
     protected:
 
@@ -35,13 +42,12 @@ namespace xsf {
 
         virtual void loadStartUpResources();
 
-        virtual ResourcePtr load(const std::string &fileName) = 0;
+        virtual ResourcePtr getRawResource(const std::string &fileName) = 0;
 
-        template<typename Container>
-        virtual Container loadMultiple(const Container &nameList);
+        Container<ResourcePtr> getMultipleRawResource(const NameContainer &fileNameContainer);
 
         struct ResourceInfo {
-            ResourceInfo() = default;
+            ResourceInfo();
 
             ResourceInfo(std::string name, std::string path, std::string loadTimeStr);
 
@@ -50,7 +56,7 @@ namespace xsf {
             ResourceLoadTime loadTime;
         };
 
-        std::unordered_map<std::string, ResourceInfo> types;
+        std::unordered_map<std::string, ResourceInfo> resourceInfo;
 
         std::unordered_map<std::string, ResourcePtr> longLiveResourcePtrs;
         std::unordered_map<std::string, ResourceWPtr> onDemandResourcePtrs;

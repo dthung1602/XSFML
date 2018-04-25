@@ -7,10 +7,10 @@
 
 namespace xsf {
     namespace {
-        const std::unordered_map<std::string, BaseResourceManager::ResourceLoadTime> typeConvert = {
-                {"STARTUP",  BaseResourceManager::ResourceLoadTime::START_UP},
-                {"MANUAL",   BaseResourceManager::ResourceLoadTime::MANUAL},
-                {"ONDEMAND", BaseResourceManager::ResourceLoadTime::ON_DEMAND},
+        std::unordered_map<std::string, ResourceLoadTime> typeConvert = {
+                {"STARTUP",  ResourceLoadTime::START_UP},
+                {"MANUAL",   ResourceLoadTime::MANUAL},
+                {"ONDEMAND", ResourceLoadTime::ON_DEMAND},
         };
     }
 
@@ -26,21 +26,46 @@ namespace xsf {
     }
 
     template<typename ResourceType>
-    BaseResourceManager::ResourcePtr BaseResourceManager<ResourceType>::getResource(const std::string &name) {
-        auto resourceInfo = types[name];
+    bool BaseResourceManager<ResourceType>::load(const std::string &name) {
+        auto &info = resourceInfo[name];
+        switch (info.loadTime) {
+            case ResourceLoadTime::MANUAL: // only load manual resources
+                auto ptr = getRawResource(info.path);
+                longLiveResourcePtrs[name] = std::move(ptr);
+            case ResourceLoadTime::START_UP: // startup resource is always ready
+                return true;
+            default: // error or on-demand resource will not be loaded
+                return false;
+        }
+    }
 
-        switch (resourceInfo.loadTime) {
+    template<typename ResourceType>
+    bool BaseResourceManager<ResourceType>::loadMultiple(const NameContainer &container) {
+        bool result = true;
+        for (auto &iter: container)
+            result &= load(iter);
+        return result;
+    }
+
+    template<typename ResourceType>
+    typename BaseResourceManager<ResourceType>::ResourcePtr
+    BaseResourceManager<ResourceType>::getResource(const std::string &name) {
+        auto info = resourceInfo[name];
+
+        switch (info.loadTime) {
             case ResourceLoadTime::START_UP:
             case ResourceLoadTime::MANUAL:
                 return longLiveResourcePtrs[name];
             case ResourceLoadTime::ON_DEMAND:
-                auto wptr = onDemandResourcePtrs[name];
-                if (wptr.expired()) {
-                    std::shared_ptr ptr(load(name));
-                    onDemandResourcePtrs[name] = std::weak_ptr(ptr);
+                auto &wptr = onDemandResourcePtrs[name]; // weak ref of resource
+                if (wptr.expired()) { // resource not found or expired
+                    ResourcePtr ptr = getRawResource(name); // get raw resource
+                    wptr = ResourceWPtr(ptr); // point weak ref to it
                     return ptr;
+                } else { // resource found & not expired, return share ptr to it
+                    return ResourcePtr(wptr);
                 }
-            default:
+            default: // error, return nullptr
                 return ResourcePtr();
         }
     }
@@ -56,33 +81,49 @@ namespace xsf {
         while (!fileStream.eof()) {
             fileStream >> loadTimeStr >> name >> filePath;
             fileStream.ignore();
-            types[name] = {name, filePath, loadTimeStr};
+            resourceInfo[name] = {name, filePath, loadTimeStr};
         }
     }
 
     template<typename ResourceType>
     void BaseResourceManager<ResourceType>::loadStartUpResources() {
-        for (auto &iter : types) {
-            auto &resourceInfo = iter.second;
-            if (resourceInfo.loadTime == ResourceLoadTime::START_UP) {
-                auto ptr = load(resourceInfo.name);
-                longLiveResourcePtrs[resourceInfo.name] = std::move(ptr);
+        for (auto &iter : resourceInfo) {
+            auto &info = iter.second;
+            if (info.loadTime == ResourceLoadTime::START_UP) {
+                auto ptr = getRawResource(info.name);
+                longLiveResourcePtrs[info.name] = std::move(ptr);
             }
         }
     }
 
-    template<typename ResourceType>
-    BaseResourceManager::ResourcePtr BaseResourceManager<ResourceType>::load(const std::string &fileName) {
+//    template<typename ResourceType>
+//    typename BaseResourceManager<ResourceType>::ResourcePtr BaseResourceManager<ResourceType>::getRawResource(const std::string &fileName) {
         // pure virtual method
-        return xsf::BaseResourceManager::ResourcePtr();
+//        return xsf::BaseResourceManager::ResourcePtr();
+//    }
+
+    template<typename ResourceType>
+    BaseResourceManager<ResourceType>::Container<std::shared_ptr<ResourceType>>
+    BaseResourceManager<ResourceType>::getMultipleRawResource(
+            const BaseResourceManager::NameContainer &fileNameContainer) {
+        // check if all names are valid
+        for (auto &fileName : fileNameContainer) {
+            auto loadTime = resourceInfo[fileName].loadTime;
+            if (loadTime == ResourceLoadTime::ERROR)
+                throw std::runtime_error("Cannot find resource with given name");
+        }
+
+        // load resources
+        Container <ResourcePtr> container;
+        for (auto &fileName: fileNameContainer) {
+            auto ptr = getRawResource(fileName);
+            container.push_back(std::move(ptr));
+        }
     }
 
     template<typename ResourceType>
-    template<typename Container>
-    Container BaseResourceManager<ResourceType>::loadMultiple(const Container &nameList) {
-        for (auto &iter : nameList)
-            load(*iter);
-    }
+    BaseResourceManager<ResourceType>::ResourceInfo::ResourceInfo()
+            : name(), path(), loadTime(ResourceLoadTime::ERROR) {}
 
     template<typename ResourceType>
     BaseResourceManager<ResourceType>::ResourceInfo::ResourceInfo(

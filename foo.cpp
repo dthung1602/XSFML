@@ -2,6 +2,8 @@
 #include <unordered_map>
 #include <memory>
 
+#include "BaseResourceManager.h"
+
 using namespace std;
 
 int main() {
