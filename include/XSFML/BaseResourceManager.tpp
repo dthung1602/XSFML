@@ -7,6 +7,9 @@
 
 namespace xsf {
     namespace {
+        /**
+         * @brief convert string in config file to \ResourceLoadTime enum
+         */
         std::unordered_map<std::string, ResourceLoadTime> typeConvert = {
                 {"STARTUP",  ResourceLoadTime::START_UP},
                 {"MANUAL",   ResourceLoadTime::MANUAL},
@@ -27,14 +30,20 @@ namespace xsf {
 
     template<typename ResourceType>
     bool BaseResourceManager<ResourceType>::load(const std::string &name) {
+        // try to get info
+        // if no info with given name, a ResourceInfo object with loadTime = ERROR is created
         auto &info = resourceInfo[name];
+
         switch (info.loadTime) {
-            case ResourceLoadTime::MANUAL: // only load manual resources
+            case ResourceLoadTime::MANUAL:     // only load manual resources
+                // TODO prevent duplicate resource
                 auto ptr = getRawResource(info.path);
                 longLiveResourcePtrs[name] = std::move(ptr);
-            case ResourceLoadTime::START_UP: // startup resource is always ready
+
+            case ResourceLoadTime::START_UP:   // startup resource has already loaded
                 return true;
-            default: // error or on-demand resource will not be loaded
+
+            default:                           // name is invalid or on-demand resource will not be loaded
                 return false;
         }
     }
@@ -50,22 +59,30 @@ namespace xsf {
     template<typename ResourceType>
     typename BaseResourceManager<ResourceType>::ResourcePtr
     BaseResourceManager<ResourceType>::getResource(const std::string &name) {
+        // try to get info
+        // if no info with given name, a ResourceInfo object with loadTime = ERROR is created
         auto info = resourceInfo[name];
 
         switch (info.loadTime) {
+            // start up & manual resources stored in the same place: longLiveResources
             case ResourceLoadTime::START_UP:
             case ResourceLoadTime::MANUAL:
                 return longLiveResourcePtrs[name];
-            case ResourceLoadTime::ON_DEMAND:
-                auto &wptr = onDemandResourcePtrs[name]; // weak ref of resource
-                if (wptr.expired()) { // resource not found or expired
+
+            case ResourceLoadTime::ON_DEMAND:  // one-time-use resources
+                // weak ref of resource
+                auto &wptr = onDemandResourcePtrs[name];
+                // resource not found or expired
+                if (wptr.expired()) {
                     ResourcePtr ptr = getRawResource(name); // get raw resource
                     wptr = ResourceWPtr(ptr); // point weak ref to it
                     return ptr;
-                } else { // resource found & not expired, return share ptr to it
+                } else {
+                    // resource found & not expired, return share ptr to it
                     return ResourcePtr(wptr);
                 }
-            default: // error, return nullptr
+
+            default: // invalid name -> return nullptr
                 return ResourcePtr();
         }
     }
@@ -80,25 +97,28 @@ namespace xsf {
 
         while (!fileStream.eof()) {
             fileStream >> loadTimeStr >> name >> filePath;
-            fileStream.ignore();
+            fileStream.ignore(); // skip '\n'
             resourceInfo[name] = {name, filePath, loadTimeStr};
         }
     }
 
     template<typename ResourceType>
     void BaseResourceManager<ResourceType>::loadStartUpResources() {
+        // save all name of resource with STARTUP load time to names
+        NameContainer names;
         for (auto &iter : resourceInfo) {
             auto &info = iter.second;
-            if (info.loadTime == ResourceLoadTime::START_UP) {
-                auto ptr = getRawResource(info.name);
-                longLiveResourcePtrs[info.name] = std::move(ptr);
-            }
+            if (info.loadTime == ResourceLoadTime::START_UP)
+                names.push_back(info.name);
         }
+
+        // load all
+        loadMultiple(names);
     }
 
 //    template<typename ResourceType>
 //    typename BaseResourceManager<ResourceType>::ResourcePtr BaseResourceManager<ResourceType>::getRawResource(const std::string &fileName) {
-        // pure virtual method
+//        // pure virtual method
 //        return xsf::BaseResourceManager::ResourcePtr();
 //    }
 
@@ -110,7 +130,7 @@ namespace xsf {
         for (auto &fileName : fileNameContainer) {
             auto loadTime = resourceInfo[fileName].loadTime;
             if (loadTime == ResourceLoadTime::ERROR)
-                throw std::runtime_error("Cannot find resource with given name");
+                throw std::runtime_error("Cannot find resource: " + fileName);
         }
 
         // load resources
@@ -119,6 +139,8 @@ namespace xsf {
             auto ptr = getRawResource(fileName);
             container.push_back(std::move(ptr));
         }
+
+        return container;
     }
 
     template<typename ResourceType>
@@ -127,10 +149,11 @@ namespace xsf {
 
     template<typename ResourceType>
     BaseResourceManager<ResourceType>::ResourceInfo::ResourceInfo(
-            std::string name, std::string path,
-            std::string loadTimeStr) : name(name),
-                                       path(path),
-                                       loadTime(typeConvert[loadTimeStr]) {
+            std::string name, std::string path, std::string loadTimeStr)
+            : name(name),
+              path(path),
+              loadTime(typeConvert[loadTimeStr]) {
+        // check if loadTime is valid
         if (loadTime == ResourceLoadTime::ERROR)
             throw std::runtime_error("Invalid ResourceLoadTime");
     }

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "XSFML/BaseResourceManager.h"
+#include "XSFML/Util.h"
 
 using namespace std;
 
