@@ -3,7 +3,9 @@ project(XSFML)
 
 set(CMAKE_CXX_STANDARD 11)
 
-file(GLOB FILES *)
+include_directories(BEFORE SYSTEM include)
+
+file(GLOB FILES include/* src/*)
 add_library(XSFML ${FILES})
 
-add_executable(foo foo.cpp) # dummy exe for testing
+add_executable(foo test/foo.cpp) # dummy exe for testing

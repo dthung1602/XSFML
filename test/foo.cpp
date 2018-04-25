@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "BaseResourceManager.h"
+#include "XSFML/BaseResourceManager.h"
 
 using namespace std;
 
