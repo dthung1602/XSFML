@@ -1,7 +1,7 @@
 #ifndef XSFML_BASERESOURSEMANAGER_H
 #define XSFML_BASERESOURSEMANAGER_H
 
-#include <bits/shared_ptr.h>
+#include <bits/unique_ptr.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -9,40 +9,32 @@
 namespace xsf {
     /**
      * @brief Enum class indicates when to load a resource
-     * @details There are 3 classes:
-     *      - Start up:
+     * @details There are 2 classes:
+     *      - Automatic:
      *          + loaded to memory at when resource manager is created
      *          + unloaded when resource manager is destroyed
      *          + most common resources: GUI, etc
-     *          + store by share_ptr in \longLiveResourcePtrs
      *      - Manual:
      *          + loaded with load method of Resource Manager
      *          + unloaded with unload method
      *          + resources for a specific level: map, background, etc
-     *          + store by share_ptr in \longLiveResourcePtrs
-     *      - On demand:
-     *          + loaded when first requested
-     *          + unloaded when there's no share_ptr ref left
-     *          + one time use resources
-     *          + store by weak_ptr in \onDemandResourcePtrs
      * Error: default value, for error checking
      */
     enum class ResourceLoadTime {
-        ERROR, START_UP, MANUAL, ON_DEMAND
+        ERROR, AUTO, MANUAL
     };
 
     /**
      * @brief Base class for other resource managers
-     * @tparam ResourceType: type of resource: sf::Texture, sf::Audio
+     * @tparam RawResourceType: type of resource: sf::Texture, sf::Audio
      */
-    template<typename ResourceType>
+    template<typename RawResourceType, typename ResourceHandler>
     class BaseResourceManager {
 
-        using ResourcePtr = std::shared_ptr<ResourceType>;
-        using ResourceWPtr = std::weak_ptr<ResourceType>;
         template<typename T>
         using Container = std::vector<T>;
         using NameContainer = Container<std::string>;
+        using ResourcePtr = std::unique_ptr<RawResourceType>;
 
     public:
 
@@ -54,77 +46,94 @@ namespace xsf {
         virtual ~BaseResourceManager();
 
         /**
-         * @brief load resource with given name to memory
+         * @brief load resource with given name to \resources container
          * @param name: name of resource
-         * @return true on success, false otherwise
-         *         note: on demand resource will NOT be loaded -> failure
+         * @return true if the resource is in memory, false otherwise
          */
         bool load(const std::string &name);
 
         /**
-         * @brief load resources with names in container to memory
+         * @brief load resources with names in container to \resources container
          * @param container: contains names of resources
          * @return true if all resources are loaded, false otherwise
          */
         bool loadMultiple(const NameContainer &container);
 
         /**
-         * @brief get resource of given name
-         * @param name: name of resource
-         * @return share_ptr of resource type
+        * @brief unload resource with given name from \resources container
+        * @param name: name of resource
+        * @return true if the resource is NOT in memory, false otherwise
+        */
+        bool unload(const std::string &name);
+
+        /**
+         * @brief unload resources with names in container from \resources container
+         * @param container: contains names of resources
+         * @return true if all resources are unloaded, false otherwise
          */
-        ResourcePtr getResource(const std::string &name);
+        bool unloadMultiple(const NameContainer &container);
+
+        /**
+         * @brief get handler of the resource of given name
+         * @param name: name of resource
+         * @return handler of resource
+         */
+        ResourceHandler getResource(const std::string &name);
 
     protected:
         /**
          * @brief read config file and save resources data to \resourceInfo
-         *        file structure: each resource has one line
-         *        [load time] [resource name] [file path]
+         *        config file structure: each resource is described with one line
+         *        [AUTO/MANUAL] [resource name] [file path]
          * @param configFileName: relative file path of config file with respect to the client code executable
          */
         virtual void loadConfigFile(const std::string &configFileName);
 
         /**
-         * @brief load all resources with STARTUP load time listed in resourceInfo
+         * @brief load all resources with AUTO load time listed in resourceInfo
          */
-        virtual void loadStartUpResources();
+        virtual void loadAutoResources();
 
         /**
-         * @brief open resource file, load to dynamic memory and return ptr to it
+         * @brief open resource file, load to memory
          * @param fileName: resource file name
-         * @return share_ptr of resource
+         * @return unique_ptr of resource
          */
         virtual ResourcePtr getRawResource(const std::string &fileName) = 0;
 
         /**
-         * @brief open resource files, load to dynamic memory and return ptr to them
+         * @brief load multiple resources at once
          * @param fileNameContainer: container of resource file names
-         * @return container of share_ptr of resource
+         * @return container of unique_ptr of resource
          */
-        Container<ResourcePtr> getMultipleRawResource(const NameContainer &fileNameContainer);
+        Container<ResourceHandler> getMultipleRawResource(const NameContainer &fileNameContainer);
 
         /**
-         * @brief structure to hold resource info
+         * @brief structure to hold resource info, not actual data
          */
-        struct ResourceInfo {
+        struct Resource {
             /**
              * Default constructor
-             * name = path = empty string
+             * name = path = ""
              * loadTime = ERROR
              */
-            ResourceInfo();
+            Resource();
 
-            ResourceInfo(std::string name, std::string path, std::string loadTimeStr);
+            Resource(std::string name, std::string path, std::string loadTimeStr);
+
+            /**
+             * @brief check whether resource has been loaded
+             * @return true if loaded
+             */
+            bool isLoaded() { return (bool) ptr; };
 
             std::string name;             /** name of resource */
             std::string path;             /** file path to the resource*/
             ResourceLoadTime loadTime;    /** indicate when to load resource*/
+            ResourcePtr ptr;              /** pointer to actual resource*/
         };
 
-        std::unordered_map<std::string, ResourceInfo> resourceInfo;         /** maps resource name to resource info obj */
-
-        std::unordered_map<std::string, ResourcePtr> longLiveResourcePtrs;  /** maps resource name to resource share ptr */
-        std::unordered_map<std::string, ResourceWPtr> onDemandResourcePtrs; /** maps resource name to resource weak ptr */
+        std::unordered_map<std::string, Resource> resources;         /** maps resource name to resource obj */
     };
 }
 
