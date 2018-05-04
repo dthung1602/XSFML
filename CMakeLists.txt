@@ -9,3 +9,4 @@ file(GLOB FILES include/* src/*)
 add_library(XSFML ${FILES})
 
 add_executable(foo test/foo.cpp) # dummy exe for testing
+target_link_libraries(foo sfml-graphics sfml-window sfml-system  sfml-audio sfml-network)

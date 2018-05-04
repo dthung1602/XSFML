@@ -2,6 +2,7 @@
 #define XSFML_BASERESOURSEMANAGER_H
 
 #include <bits/unique_ptr.h>
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -25,18 +26,53 @@ namespace xsf {
     };
 
     /**
+     * @brief exception thrown when given resource name is not in config file
+     */
+    class BadResourceNameException : public std::runtime_error {
+    public:
+        explicit BadResourceNameException(const std::string &resourceName)
+                : runtime_error(resourceName + " is an invalid resource name") {}
+    };
+
+    /**
+     * @brief exception thrown when an error happen while loading resource to memory
+     */
+    class ResourceLoadingException : public std::runtime_error {
+    public:
+        explicit ResourceLoadingException(const std::string &fileName)
+                : runtime_error("Cannot open file " + fileName) {}
+    };
+
+    /**
+     * @brief exception thrown when client code request for a resource that has not been loaded
+     */
+    class ResourceNotLoadedException : public std::runtime_error {
+    public:
+        explicit ResourceNotLoadedException(const std::string &resourceName)
+                : runtime_error("Resource " + resourceName + " has not been loaded") {}
+    };
+
+    /**
+     * @brief exception thrown when client code request for a resource that has not been loaded
+     */
+    class BadConfigFileException : public std::runtime_error {
+    public:
+        explicit BadConfigFileException()
+                : runtime_error("Config file is corrupted") {}
+    };
+
+    /**
      * @brief Base class for other resource managers
      * @tparam RawResourceType: type of resource: sf::Texture, sf::Audio
      */
     template<typename RawResourceType, typename ResourceHandler>
     class BaseResourceManager {
 
+    public:
         template<typename T>
         using Container = std::vector<T>;
         using NameContainer = Container<std::string>;
         using ResourcePtr = std::unique_ptr<RawResourceType>;
-
-    public:
 
         /**
          * @param configFileName: relative file path of config file with respect to the client code executable
@@ -48,43 +84,46 @@ namespace xsf {
         /**
          * @brief load resource with given name to \resources container
          * @param name: name of resource
-         * @return true if the resource is in memory, false otherwise
+         * @return 1  if resource has just been loaded
+         *         0  if resource has already been loaded before
          */
-        bool load(const std::string &name);
+        int load(const std::string &name);
 
         /**
          * @brief load resources with names in container to \resources container
          * @param container: contains names of resources
-         * @return true if all resources are loaded, false otherwise
+         * @return number of resources have just been loaded with this function call
          */
-        bool loadMultiple(const NameContainer &container);
+        int loadMultiple(const NameContainer &container);
 
         /**
         * @brief unload resource with given name from \resources container
         * @param name: name of resource
-        * @return true if the resource is NOT in memory, false otherwise
+        * @return 1  if the resource has just been unloaded
+        *         0  if the resource has already been unloaded
         */
-        bool unload(const std::string &name);
+        int unload(const std::string &name);
 
         /**
          * @brief unload resources with names in container from \resources container
          * @param container: contains names of resources
-         * @return true if all resources are unloaded, false otherwise
+         * @return number of resources unloaded with this function call
          */
-        bool unloadMultiple(const NameContainer &container);
+        int unloadMultiple(const NameContainer &container);
 
         /**
          * @brief get handler of the resource of given name
          * @param name: name of resource
          * @return handler of resource
          */
-        ResourceHandler getResource(const std::string &name);
+        virtual ResourceHandler get(const std::string &name) = 0;
 
     protected:
         /**
          * @brief read config file and save resources data to \resourceInfo
          *        config file structure: each resource is described with one line
-         *        [AUTO/MANUAL] [resource name] [file path]
+         *        [AUTO/MANUAL] [resource_name] [file_path]
+         *        resource_name and file_path must not contain space
          * @param configFileName: relative file path of config file with respect to the client code executable
          */
         virtual void loadConfigFile(const std::string &configFileName);
@@ -109,7 +148,7 @@ namespace xsf {
         Container<ResourceHandler> getMultipleRawResource(const NameContainer &fileNameContainer);
 
         /**
-         * @brief structure to hold resource info, not actual data
+         * @brief structure to hold resource info and ptr to actual data
          */
         struct Resource {
             /**
@@ -119,7 +158,7 @@ namespace xsf {
              */
             Resource();
 
-            Resource(std::string name, std::string path, std::string loadTimeStr);
+            Resource(const std::string &name, const std::string &path, const std::string &loadTimeStr);
 
             /**
              * @brief check whether resource has been loaded

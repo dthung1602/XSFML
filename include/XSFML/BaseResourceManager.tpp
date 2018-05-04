@@ -2,6 +2,7 @@
 // Created by hung on 24/04/18.
 //
 
+#include <sstream>
 #include "BaseResourceManager.h"
 #include "Util.h"
 
@@ -47,7 +48,7 @@
 //
 //    template<typename ResourceType>
 //    typename BaseResourceManager<ResourceType>::ResourcePtr
-//    BaseResourceManager<ResourceType>::getResource(const std::string &name) {
+//    BaseResourceManager<ResourceType>::get(const std::string &name) {
 //        // try to get info
 //        // if no info with given name, a Resource object with loadTime = ERROR is created
 //        auto info = resourceInfo[name];
@@ -105,11 +106,11 @@
 //        loadMultiple(names);
 //    }
 //
-////    template<typename RawResourceType>
-////    typename BaseResourceManager<RawResourceType>::ResourcePtr BaseResourceManager<RawResourceType>::getRawResource(const std::string &fileName) {
-////        // pure virtual method
-////        return xsf::BaseResourceManager::ResourcePtr();
-////    }
+//    template<typename RawResourceType>
+//    typename BaseResourceManager<RawResourceType>::ResourcePtr BaseResourceManager<RawResourceType>::getRawResource(const std::string &fileName) {
+//        // pure virtual method
+//        return xsf::BaseResourceManager::ResourcePtr();
+//    }
 //
 //    template<typename ResourceType>
 //    BaseResourceManager<ResourceType>::Container<std::shared_ptr<ResourceType>>
@@ -183,50 +184,84 @@ namespace xsf {
     }
 
     template<typename RawResourceType, typename ResourceHandler>
-    bool BaseResourceManager<RawResourceType, ResourceHandler>::load(const std::string &name) {
-        // try to get info
-        // if no info with given name, a Resource object with loadTime = ERROR is created
-        auto &resource = resources[name];
+    int BaseResourceManager<RawResourceType, ResourceHandler>::load(const std::string &name) {
+        // try to get resource
+        auto iter = resources.find(name);
 
-        switch (resource.loadTime) {
-            case ResourceLoadTime::MANUAL:     // only load manual resources
-                // TODO prevent duplicate resource
-                auto ptr = getRawResource(resource.path);
-                resources[name] = std::move(ptr);
+        // resource name not found
+        if (iter == resources.end())
+            throw BadResourceNameException(name);
 
-            case ResourceLoadTime::AUTO:   // startup resource has already loaded
-                return true;
+        auto &resource = iter->second;
 
-            default:                           // name is invalid or on-demand resource will not be loaded
-                return false;
+        // load raw resource if not loaded
+        if (!resource.isLoaded()) {
+            auto ptr = getRawResource(resource.path);
+            resources[name] = std::move(ptr);
+            return 1;
         }
+
+        return 0;
     }
 
     template<typename RawResourceType, typename ResourceHandler>
-    bool BaseResourceManager<RawResourceType, ResourceHandler>::loadMultiple(
+    int BaseResourceManager<RawResourceType, ResourceHandler>::loadMultiple(
             const BaseResourceManager::NameContainer &container) {
-        return false;
+        int count = 0;
+        for (auto &name : container)
+            count += load(name);
+        return count;
     }
 
     template<typename RawResourceType, typename ResourceHandler>
-    bool BaseResourceManager<RawResourceType, ResourceHandler>::unload(const std::string &name) {
-        return false;
+    int BaseResourceManager<RawResourceType, ResourceHandler>::unload(const std::string &name) {
+        // try to get resource
+        auto iter = resources.find(name);
+
+        // resource name not found
+        if (iter == resources.end())
+            throw BadResourceNameException(name);
+
+        auto &resource = iter->second;
+
+        // unload raw resource if not unloaded
+        if (resource.isLoaded()) {
+            resources[name].ptr.release();
+            return 1;
+        }
+
+        return 0;
     }
 
     template<typename RawResourceType, typename ResourceHandler>
-    bool BaseResourceManager<RawResourceType, ResourceHandler>::unloadMultiple(
+    int BaseResourceManager<RawResourceType, ResourceHandler>::unloadMultiple(
             const BaseResourceManager::NameContainer &container) {
-        return false;
+        int count = 0;
+        for (auto &name : container)
+            count += unload(name);
+        return count;
     }
 
-    template<typename RawResourceType, typename ResourceHandler>
-    ResourceHandler BaseResourceManager<RawResourceType, ResourceHandler>::getResource(const std::string &name) {
-        return nullptr;
-    }
+//    template<typename RawResourceType, typename ResourceHandler>
+//    ResourceHandler BaseResourceManager<RawResourceType, ResourceHandler>::get(const std::string &name) {
+//        return nullptr;
+//    }
 
     template<typename RawResourceType, typename ResourceHandler>
     void BaseResourceManager<RawResourceType, ResourceHandler>::loadConfigFile(const std::string &configFileName) {
+        auto fileStream = openFile(configFileName);
 
+        char buffer[301];       // buffer to hold a line
+        char loadTimeStr[101];
+        char name[101];
+        char filePath[101];
+
+        while (!fileStream.eof()) {
+            fileStream.getline(buffer, sizeof(buffer));
+            if (sscanf(buffer, "%100s %100s %100s", loadTimeStr, name, filePath) != 3)
+                throw BadConfigFileException();
+            resources[name] = Resource(name, filePath, loadTimeStr);
+        }
     }
 
     template<typename RawResourceType, typename ResourceHandler>
@@ -235,9 +270,22 @@ namespace xsf {
     }
 
     template<typename RawResourceType, typename ResourceHandler>
-    BaseResourceManager::Container<ResourceHandler>
+    BaseResourceManager<RawResourceType, ResourceHandler>::Container<ResourceHandler>
     BaseResourceManager<RawResourceType, ResourceHandler>::getMultipleRawResource(
             const BaseResourceManager::NameContainer &fileNameContainer) {
-        return BaseResourceManager::Container<ResourceHandler>();
+        return BaseResourceManager<RawResourceType, ResourceHandler>::Container<ResourceHandler>();
+    }
+
+    template<typename RawResourceType, typename ResourceHandler>
+    BaseResourceManager<RawResourceType, ResourceHandler>::Resource::Resource()
+            : name(), path(), loadTime(ResourceLoadTime::ERROR) {}
+
+    template<typename RawResourceType, typename ResourceHandler>
+    BaseResourceManager<RawResourceType, ResourceHandler>::Resource::Resource(const std::string &name,
+                                                                              const std::string &path,
+                                                                              const std::string &loadTimeStr)
+            : name(name), path(path), loadTime(loadTimeConvert[loadTimeStr]) {
+        if (loadTime == ResourceLoadTime::ERROR)
+            throw BadConfigFileException();
     }
 }

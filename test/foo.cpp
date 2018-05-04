@@ -1,6 +1,6 @@
 #include <iostream>
-#include <unordered_map>
 #include <memory>
+#include <SFML/Graphics.hpp>
 
 //#include "XSFML/BaseResourceManager.h"
 //#include "XSFML/Util.h"
@@ -15,9 +15,18 @@ public:
 };
 
 int main() {
-    auto s = new Foo();
-    unique_ptr<Foo> foo{s};
-    foo.reset();
-    cout << "hello" << endl;
+    sf::Texture texture;
+    texture.loadFromFile("abc");
+    sf::Sprite sprite(texture, sf::IntRect(13, 43, 54, 34));
+
+    sf::RenderWindow renderWindow;
+    renderWindow.draw(sprite);
+//    sprite.set
+
+
+    char c[] = "This is ok?";
+    string s(c);
+    s[2] = 'X';
+    cout << s << endl << c << endl;
     return 0;
 }
