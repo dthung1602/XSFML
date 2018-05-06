@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "XSFML/Exception.h"
+
 namespace xsf {
     /**
      * @brief Enum class indicates when to load a resource
@@ -23,42 +25,6 @@ namespace xsf {
      */
     enum class ResourceLoadTime {
         ERROR, AUTO, MANUAL
-    };
-
-    /**
-     * @brief exception thrown when given resource name is not in config file
-     */
-    class BadResourceNameException : public std::runtime_error {
-    public:
-        explicit BadResourceNameException(const std::string &resourceName)
-                : runtime_error(resourceName + " is an invalid resource name") {}
-    };
-
-    /**
-     * @brief exception thrown when an error happen while loading resource to memory
-     */
-    class ResourceLoadingException : public std::runtime_error {
-    public:
-        explicit ResourceLoadingException(const std::string &fileName)
-                : runtime_error("Cannot open file " + fileName) {}
-    };
-
-    /**
-     * @brief exception thrown when client code request for a resource that has not been loaded
-     */
-    class ResourceNotLoadedException : public std::runtime_error {
-    public:
-        explicit ResourceNotLoadedException(const std::string &resourceName)
-                : runtime_error("Resource " + resourceName + " has not been loaded") {}
-    };
-
-    /**
-     * @brief exception thrown when client code request for a resource that has not been loaded
-     */
-    class BadConfigFileException : public std::runtime_error {
-    public:
-        explicit BadConfigFileException()
-                : runtime_error("Config file is corrupted") {}
     };
 
     /**

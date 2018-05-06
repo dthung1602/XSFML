@@ -250,17 +250,19 @@ namespace xsf {
     template<typename RawResourceType, typename ResourceHandler>
     void BaseResourceManager<RawResourceType, ResourceHandler>::loadConfigFile(const std::string &configFileName) {
         auto fileStream = openFile(configFileName);
+        fileStream.exceptions();
 
-        char buffer[301];       // buffer to hold a line
-        char loadTimeStr[101];
-        char name[101];
-        char filePath[101];
+        std::string loadTimeStr;
+        std::string name;
+        std::string filePath;
 
-        while (!fileStream.eof()) {
-            fileStream.getline(buffer, sizeof(buffer));
-            if (sscanf(buffer, "%100s %100s %100s", loadTimeStr, name, filePath) != 3)
-                throw BadConfigFileException();
-            resources[name] = Resource(name, filePath, loadTimeStr);
+        try {
+            while (!fileStream.eof()) {
+                fileStream >> loadTimeStr >> name >> filePath;
+                resources[name] = Resource(name, filePath, loadTimeStr);
+            }
+        } catch (std::ios_base::failure &failure) {
+            throw BadConfigFileException();
         }
     }
 
