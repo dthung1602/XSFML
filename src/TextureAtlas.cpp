@@ -2,6 +2,7 @@
 // Created by hung on 04/05/18.
 //
 
+#include <SFML/Graphics.hpp>
 #include "XSFML/TextureAtlas.h"
 
 namespace xsf {

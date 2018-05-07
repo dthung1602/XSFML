@@ -53,6 +53,10 @@ namespace xsf {
             throw std::runtime_error("Cannot open config file");
         return dirname(buf);
     }
+
+    std::fstream openFile(const std::string &fileName) {
+        return std::fstream(getPath() + "/" + fileName);
+    }
 }
 
 #endif

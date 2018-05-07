@@ -10,10 +10,10 @@
 /**
  * @brief base exception class
  */
-class ResourceManagerException : public std::exception {
+class ResourceManagerException : public std::runtime_error {
 public:
     explicit ResourceManagerException(const std::string &error)
-            : ResourceManagerException(error) {}
+            : std::runtime_error(error) {}
 };
 
 /**

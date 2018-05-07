@@ -16,21 +16,24 @@ namespace xsf {
         friend class TextureManager;
 
     public:
+
+        TextureRegion() : name(), texture(nullptr), rect() {};
+
         template<typename StringType>
-        TextureRegion(StringType &&name, const sf::Texture &texture, int top, int left, int width, int height)
-                : name(std::forward<StringType>(name)), texture(texture), rect(top, left, width, height) {};
+        TextureRegion(StringType &&name, sf::Texture &texture, int top, int left, int width, int height)
+                : name(std::forward<StringType>(name)), texture(&texture), rect(top, left, width, height) {};
 
         void updateSprite(sf::Sprite &sprite) {
-            sprite.setTexture(texture);
+            sprite.setTexture(*texture);
             sprite.setTextureRect(rect);
         };
 
         std::string getName() { return name; }
 
     private:
-        const std::string name;
-        const sf::Texture &texture;
-        const sf::IntRect rect;
+        std::string name;
+        sf::Texture *texture;
+        sf::IntRect rect;
     };
 
 }

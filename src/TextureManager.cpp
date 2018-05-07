@@ -23,8 +23,8 @@ namespace xsf {
         return atlas.ptr->regions[name];
     }
 
-    BaseResourceManager::ResourcePtr &&xsf::TextureManager::getRawResource(const std::string &atlasFileName) {
-        BaseResourceManager::ResourcePtr ptr(new TextureAtlas(atlasFileName));
+    BaseResourceManager<TextureAtlas, TextureRegion>::ResourcePtr &&xsf::TextureManager::getRawResource(const std::string &atlasFileName) {
+        BaseResourceManager<TextureAtlas, TextureRegion>::ResourcePtr ptr(new TextureAtlas(atlasFileName));
         return std::move(ptr);
     }
 }
