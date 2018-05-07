@@ -249,9 +249,12 @@ namespace xsf {
 
     template<typename RawResourceType, typename ResourceHandler>
     void BaseResourceManager<RawResourceType, ResourceHandler>::loadConfigFile(const std::string &configFileName) {
+        // open file
         auto fileStream = openFile(configFileName);
+        // turn format errors to exceptions
         fileStream.exceptions();
 
+        // read resource lists
         std::string loadTimeStr;
         std::string name;
         std::string filePath;

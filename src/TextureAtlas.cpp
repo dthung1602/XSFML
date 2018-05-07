@@ -6,7 +6,7 @@
 
 namespace xsf {
 
-    TextureAtlas::TextureAtlas(const std::string &aliasFile) {
+    TextureAtlas::TextureAtlas(const std::string &aliasFile) : name(aliasFile) {
         // open atlas file
         auto fileStream = openFile(aliasFile);
         // turn stream reading errors to exception
@@ -28,7 +28,7 @@ namespace xsf {
         try {
             while (!fileStream.eof()) {
                 fileStream >> regionName >> x >> y >> width >> height
-                           >> xOffset >> yOffset >> origW>> origH;
+                           >> xOffset >> yOffset >> origW >> origH;
                 fileStream.ignore(15, ' '); // todo currently do not support rotate
                 regions[regionName] = TextureRegion(regionName, texture, x, y, width, height); // todo offset...
             }

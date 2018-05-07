@@ -17,7 +17,11 @@
 
 namespace xsf {
 
+    class TextureManager;
+
     class TextureAtlas {
+
+        friend class TextureManager;
 
     public:
 
@@ -26,6 +30,7 @@ namespace xsf {
         const TextureRegion &getTextureRegion(const std::string &regionName);
 
     private:
+        std::string name;
         sf::Texture texture;
         std::unordered_map<std::string, xsf::TextureRegion> regions;
     };

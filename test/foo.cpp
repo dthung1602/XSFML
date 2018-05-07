@@ -5,10 +5,28 @@
 using namespace std;
 
 
+class TextureRegion {
+
+public:
+    template<typename StringType>
+    TextureRegion(StringType &&name, const sf::Texture &texture, int top, int left, int width, int height)
+            : name(std::forward<StringType>(name)), texture(texture), rect(top, left, width, height) {};
+
+    void updateSprite(sf::Sprite &sprite) {
+        sprite.setTexture(texture);
+        sprite.setTextureRect(rect);
+    };
+
+    std::string getName() { return name; }
+
+private:
+    const std::string name;
+    const sf::Texture &texture;
+    const sf::IntRect rect;
+};
+
 int main() {
-    sf::Sprite sprite;
-    sf::RenderWindow window;
-    string s = "lkasdjflkasd jasd fjsadlkf jlkasd jfkls dlkflksafkjslkfjlksa df;klsjdlkfjasdlk;fjlksjd";
-    cout << sizeof(s) + sizeof(sf::IntRect) + sizeof(int*) << endl;
+    cout << sizeof(TextureRegion) << endl;
+
     return 0;
 }

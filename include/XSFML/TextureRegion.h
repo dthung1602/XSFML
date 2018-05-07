@@ -9,7 +9,11 @@
 
 namespace xsf {
 
+    class TextureManager;
+
     class TextureRegion {
+
+        friend class TextureManager;
 
     public:
         template<typename StringType>

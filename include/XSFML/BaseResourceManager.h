@@ -104,7 +104,7 @@ namespace xsf {
          * @param fileName: resource file name
          * @return unique_ptr of resource
          */
-        virtual ResourcePtr getRawResource(const std::string &fileName) = 0;
+        virtual ResourcePtr && getRawResource(const std::string &fileName) = 0;
 
         /**
          * @brief load multiple resources at once
