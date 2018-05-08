@@ -26,11 +26,16 @@ namespace xsf {
 
     BaseResourceManager<sf::SoundBuffer, sf::Sound>::ResourcePtr
     xsf::SoundManager::getRawResource(const std::string &fileName) {
+        // sound buffer object
         auto soundBuffer = new sf::SoundBuffer();
+
+        // load from file
         if (!soundBuffer->loadFromFile(fileName)) {
+            // unsuccessful loading
             delete soundBuffer;
             throw ResourceLoadingException(fileName);
         }
+
         return soundBuffer;
     }
 
