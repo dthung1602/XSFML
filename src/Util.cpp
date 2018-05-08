@@ -18,6 +18,7 @@ namespace xsf {
         for (auto &c : tmp)
             if (c == '\\') c = '/';
 
+        // find / and .
         auto lastSlash = tmp.rfind('/') + 1;
         auto lastDot = tmp.rfind('.');
 

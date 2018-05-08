@@ -81,7 +81,7 @@ namespace xsf {
          * @param name: name of resource
          * @return handler of resource
          */
-        virtual ResourceHandler get(const std::string &name) = 0;
+        virtual ResourceHandler get(const std::string &name) = 0; // todo consider return const &
 
     protected:
 
@@ -96,6 +96,7 @@ namespace xsf {
 
         /**
          * @brief load all resources with AUTO load time listed in resourceInfo
+         *        this method should be called by the derived class constructor
          */
         virtual void loadAutoResources();
 

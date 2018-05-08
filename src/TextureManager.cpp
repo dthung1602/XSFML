@@ -6,9 +6,9 @@ namespace xsf {
         using ResourcePtrType = BaseResourceManager<TextureAtlas, TextureRegion>::ResourcePtr; // = TextureAtlas*
     }
 
-    TextureManager::TextureManager(const std::string &configFile)
-            : BaseResourceManager(configFile) {
-        loadAutoResources();
+    TextureManager::TextureManager(const std::string &atlasFile)
+            : BaseResourceManager(atlasFile) {
+        loadAutoResources(); // this method is virtual -> can't be called by base class ctor
     }
 
     TextureRegion xsf::TextureManager::get(const std::string &name) {
@@ -24,7 +24,7 @@ namespace xsf {
 
         // check if atlas is loaded
         auto &resource = iter->second;
-        if (!resource.isLoaded()) // todo
+        if (!resource.isLoaded())
             throw ResourceNotLoadedException(name);
 
         return resource.ptr->getTextureRegion(name);
@@ -46,7 +46,7 @@ namespace xsf {
                 resourceIter.second.ptr = atlas;
                 atlas->loadTexture();
             } else {
-                // release memory
+                // release memory of not used atlases
                 delete atlas;
             }
         }
