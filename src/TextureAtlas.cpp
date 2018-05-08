@@ -1,11 +1,8 @@
-//
-// Created by hung on 04/05/18.
-//
-
 #include <SFML/Graphics.hpp>
 
 #include "XSFML/TextureAtlas.h"
 #include "XSFML/Util.h"
+#include "XSFML/Exception.h"
 
 namespace xsf {
 

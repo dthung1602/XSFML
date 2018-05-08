@@ -119,7 +119,10 @@ namespace xsf {
     BaseResourceManager<RawResourceType, ResourceHandler>::Container<ResourceHandler>
     BaseResourceManager<RawResourceType, ResourceHandler>::getMultipleRawResource(
             const BaseResourceManager::NameContainer &fileNameContainer) {
-        return BaseResourceManager<RawResourceType, ResourceHandler>::Container<ResourceHandler>();
+        BaseResourceManager<RawResourceType, ResourceHandler>::Container<ResourceHandler> container;
+        for (auto &fileName: fileNameContainer)
+            container.push_back(get(fileName));
+        return container;
     }
 
     template<typename RawResourceType, typename ResourceHandler>

@@ -1,7 +1,3 @@
-//
-// Created by hung on 04/05/18.
-//
-
 #ifndef XSFML_TEXTUREATLAS_H
 #define XSFML_TEXTUREATLAS_H
 
@@ -9,11 +5,7 @@
 #include <unordered_map>
 #include <sstream>
 
-#include <SFML/Graphics.hpp>
-
 #include "TextureRegion.h"
-#include "Exception.h"
-#include "Util.h"
 
 namespace xsf {
 
@@ -32,6 +24,7 @@ namespace xsf {
         const TextureRegion &getTextureRegion(const std::string &regionName);
 
     private:
+
         std::string name;
         std::string texturePath;
         sf::Texture texture;
@@ -41,7 +34,6 @@ namespace xsf {
 
         void loadTexture();
     };
-
 
 }
 

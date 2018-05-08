@@ -1,7 +1,3 @@
-//
-// Created by hung on 06/05/18.
-//
-
 #ifndef XSFML_TEXTUREMANAGER_H
 #define XSFML_TEXTUREMANAGER_H
 
@@ -11,11 +7,6 @@
 #include "TextureAtlas.h"
 
 namespace xsf {
-
-//    template <>
-//    bool BaseResourceManager<TextureAtlas, TextureRegion>::Resource::isLoaded() {
-//        return ptr and ptr->isTextureLoaded();
-//    };
 
     class TextureManager : public BaseResourceManager<TextureAtlas, TextureRegion> {
 
@@ -33,6 +24,7 @@ namespace xsf {
 
         void loadAutoResources() override;
     };
+
 }
 
 #endif //XSFML_TEXTUREMANAGER_H

@@ -1,7 +1,3 @@
-//
-// Created by hung on 04/05/18.
-//
-
 #ifndef XSFML_EXCEPTION_H
 #define XSFML_EXCEPTION_H
 

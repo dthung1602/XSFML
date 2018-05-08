@@ -2,7 +2,6 @@
 #define XSFML_BASERESOURSEMANAGER_H
 
 #include <bits/unique_ptr.h>
-#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
