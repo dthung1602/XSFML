@@ -1,0 +1,4 @@
+MANUAL    ../test/sound_manager/sound1.wav
+AUTO      ../test/sound_manager/sound2.wav
+MANUAL    ../test/sound_manager/sound3.wav
+AUTO      ../test/sound_manager/sound4.wav
