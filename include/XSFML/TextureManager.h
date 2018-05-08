@@ -7,8 +7,8 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "XSFML/BaseResourceManager.h"
-#include "XSFML/TextureAtlas.h"
+#include "BaseResourceManager.h"
+#include "TextureAtlas.h"
 
 namespace xsf {
 

@@ -1,6 +1,8 @@
 #include <sstream>
+
 #include "BaseResourceManager.h"
 #include "Util.h"
+#include "Exception.h"
 
 namespace xsf {
     namespace {

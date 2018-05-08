@@ -11,9 +11,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "XSFML/TextureRegion.h"
-#include "XSFML/Exception.h"
-#include "XSFML/Util.h"
+#include "TextureRegion.h"
+#include "Exception.h"
+#include "Util.h"
 
 namespace xsf {
 

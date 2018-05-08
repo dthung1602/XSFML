@@ -35,9 +35,8 @@ namespace xsf {
         int xOffset, yOffset;
         int origW, origH;
         try {
-            while (!fileStream.eof()) {
-                fileStream >> regionName >> x >> y >> width >> height
-                           >> xOffset >> yOffset >> origW >> origH;
+            while (fileStream >> regionName >> x >> y >> width >> height
+                              >> xOffset >> yOffset >> origW >> origH) {
                 regionName = extractResourceName(regionName);
                 regions[regionName] = TextureRegion(regionName, texture, x, y, width, height); // todo offset...
             }

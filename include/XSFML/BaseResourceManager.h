@@ -7,8 +7,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "XSFML/Exception.h"
-
 namespace xsf {
     /**
      * @brief Enum class indicates when to load a resource
@@ -29,12 +27,14 @@ namespace xsf {
 
     /**
      * @brief Base class for other resource managers
-     * @tparam RawResourceType: type of resource: sf::Texture, sf::Audio
+     * @tparam RawResourceType: type of resource: sf::Texture, sf::Audio, stored in \resource
+     *         ResourceHandler: resource ref: TextureRegion, sf::Sound, returned by get()
      */
     template<typename RawResourceType, typename ResourceHandler>
     class BaseResourceManager {
 
     public:
+
         template<typename T>
         using Container = std::vector<T>;
         using NameContainer = Container<std::string>;
@@ -53,7 +53,7 @@ namespace xsf {
          * @return 1  if resource has just been loaded
          *         0  if resource has already been loaded before
          */
-        virtual int load(const std::string &name);
+        int load(const std::string &name);
 
         /**
          * @brief load resources with names in container to \resources container
@@ -68,7 +68,7 @@ namespace xsf {
         * @return 1  if the resource has just been unloaded
         *         0  if the resource has already been unloaded
         */
-        virtual int unload(const std::string &name);
+        int unload(const std::string &name);
 
         virtual /**
          * @brief unload resources with names in container from \resources container
@@ -85,7 +85,8 @@ namespace xsf {
         virtual ResourceHandler get(const std::string &name) = 0;
 
     protected:
-        virtual /**
+
+        /**
          * @brief read config file and save resources data to \resourceInfo
          *        config file structure: each resource is described with one line
          *        [AUTO/MANUAL] [path/to/file/resource_name.extension]
@@ -94,10 +95,10 @@ namespace xsf {
          */
         void loadConfigFile(const std::string &configFileName);
 
-        virtual /**
+        /**
          * @brief load all resources with AUTO load time listed in resourceInfo
          */
-        void loadAutoResources();
+        virtual void loadAutoResources();
 
         /**
          * @brief open resource file, load to memory
@@ -134,7 +135,7 @@ namespace xsf {
              * @brief check whether resource has been loaded
              * @return true if loaded
              */
-            bool isLoaded() { return (bool) ptr; }; // todo
+            bool isLoaded() { return (bool) ptr; };
 
             std::string name;             /** name of resource */
             std::string path;             /** file path to the resource*/
