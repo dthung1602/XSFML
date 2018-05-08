@@ -1,0 +1,4 @@
+AUTO    ../test/texture_manager/test.atlas
+AUTOS    ../test/texture_manager/test.atlas
+AUTOS    ../test/texture_manager/test.atlas
+MANUAL  ../test/test1.atlas

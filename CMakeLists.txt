@@ -18,3 +18,4 @@ add_executable(test_util test/util/test_open_file.cpp include/XSFML/Util.h src/U
 target_link_libraries(test_texture_manager sfml-graphics sfml-window sfml-system  sfml-audio sfml-network)
 
 add_executable(test_extract_resource_name test/util/test_extract_resource_name.cpp src/Util.cpp)
+add_executable(test_sound_manager test/sound_manager/test_sound_manager.cpp)

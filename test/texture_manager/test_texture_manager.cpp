@@ -36,6 +36,38 @@ void renderWindow(vector<TextureRegion> &arr) {
 }
 
 int main() {
+    /*
+     * RESULT
+     *
+     * Cannot open file alsdkfj
+     * Config file is corrupted
+     * bad res name caught
+     * res not loaded name caught
+     * 1
+     * 1
+     * res not loaded name caught
+     * 1
+     * res not loaded name caught
+     * 2
+     * end of main
+     *
+     */
+
+    // load invalid texture manager
+    try {
+        TextureManager *manager = new TextureManager("alsdkfj");
+    } catch (ResourceLoadingException &e) {
+        cout << e.what() << endl;
+    }
+
+    // load corrupted texture manager
+    try {
+        TextureManager *manager = new TextureManager("../test/texture_manager/config-bad.txt");
+    } catch (BadConfigFileException &e) {
+        cout << e.what() << endl;
+    }
+
+    // load texture manager
     TextureManager textureManager("../test/texture_manager/config.txt");
 
     // test get auto resource
