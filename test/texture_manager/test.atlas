@@ -1,0 +1,4 @@
+textures: ../test/texture_manager/test.png
+standing-up-right.png	1	1	23	27	0	0	25	27	
+spike.png	1	31	21	17	0	3	21	20	
+life.png	25	31	13	15	0	0	13	15	

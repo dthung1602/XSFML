@@ -1,13 +1,33 @@
-//
-// Created by hung on 24/04/18.
-//
-
 #include "XSFML/Util.h"
 
 /**
  *      Platform independent code
  */
 
+namespace xsf {
+
+    std::fstream openFile(const std::string &fileName) {
+        return std::fstream(getPath() + "/" + fileName);
+    }
+
+
+    std::string extractResourceName(const std::string &fileName) {
+        std::string tmp = fileName;
+
+        // replace \ in window by /
+        for (auto &c : tmp)
+            if (c == '\\') c = '/';
+
+        auto lastSlash = tmp.rfind('/') + 1;
+        auto lastDot = tmp.rfind('.');
+
+        if (lastDot == -1)
+            lastDot = tmp.size();
+
+        return tmp.substr(lastSlash, lastDot - lastSlash);
+    }
+
+}
 
 /**
  *      Platform - dependent code
@@ -47,6 +67,7 @@ namespace xsf {
 #include <libgen.h>
 
 namespace xsf {
+
     std::string getPath() {
         char buf[PATH_MAX + 1];
         if (readlink("/proc/self/exe", buf, sizeof(buf) - 1) == -1)
@@ -54,9 +75,6 @@ namespace xsf {
         return dirname(buf);
     }
 
-    std::fstream openFile(const std::string &fileName) {
-        return std::fstream(getPath() + "/" + fileName);
-    }
 }
 
 #endif

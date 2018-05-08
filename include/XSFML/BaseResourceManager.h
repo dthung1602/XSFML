@@ -38,14 +38,14 @@ namespace xsf {
         template<typename T>
         using Container = std::vector<T>;
         using NameContainer = Container<std::string>;
-        using ResourcePtr = std::unique_ptr<RawResourceType>;
+        using ResourcePtr = RawResourceType *;
 
         /**
          * @param configFileName: relative file path of config file with respect to the client code executable
          */
         explicit BaseResourceManager(const std::string &configFileName);
 
-        virtual ~BaseResourceManager();
+        virtual ~BaseResourceManager() = default;
 
         /**
          * @brief load resource with given name to \resources container
@@ -53,7 +53,7 @@ namespace xsf {
          * @return 1  if resource has just been loaded
          *         0  if resource has already been loaded before
          */
-        int load(const std::string &name);
+        virtual int load(const std::string &name);
 
         /**
          * @brief load resources with names in container to \resources container
@@ -68,9 +68,9 @@ namespace xsf {
         * @return 1  if the resource has just been unloaded
         *         0  if the resource has already been unloaded
         */
-        int unload(const std::string &name);
+        virtual int unload(const std::string &name);
 
-        /**
+        virtual /**
          * @brief unload resources with names in container from \resources container
          * @param container: contains names of resources
          * @return number of resources unloaded with this function call
@@ -85,26 +85,26 @@ namespace xsf {
         virtual ResourceHandler get(const std::string &name) = 0;
 
     protected:
-        /**
+        virtual /**
          * @brief read config file and save resources data to \resourceInfo
          *        config file structure: each resource is described with one line
-         *        [AUTO/MANUAL] [resource_name] [file_path]
+         *        [AUTO/MANUAL] [path/to/file/resource_name.extension]
          *        resource_name and file_path must not contain space
          * @param configFileName: relative file path of config file with respect to the client code executable
          */
-        virtual void loadConfigFile(const std::string &configFileName);
+        void loadConfigFile(const std::string &configFileName);
 
-        /**
+        virtual /**
          * @brief load all resources with AUTO load time listed in resourceInfo
          */
-        virtual void loadAutoResources();
+        void loadAutoResources();
 
         /**
          * @brief open resource file, load to memory
          * @param fileName: resource file name
          * @return unique_ptr of resource
          */
-        virtual ResourcePtr && getRawResource(const std::string &fileName) = 0;
+        virtual ResourcePtr getRawResource(const std::string &fileName) = 0;
 
         /**
          * @brief load multiple resources at once
@@ -126,11 +126,15 @@ namespace xsf {
 
             Resource(const std::string &name, const std::string &path, const std::string &loadTimeStr);
 
+            ~Resource() { delete ptr; }
+
+            Resource &operator=(Resource &&resource) noexcept;
+
             /**
              * @brief check whether resource has been loaded
              * @return true if loaded
              */
-            bool isLoaded() { return (bool) ptr; };
+            bool isLoaded() { return (bool) ptr; }; // todo
 
             std::string name;             /** name of resource */
             std::string path;             /** file path to the resource*/

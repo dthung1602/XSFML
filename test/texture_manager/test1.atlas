@@ -1,0 +1,4 @@
+textures: ../test/texture_manager/test1.png
+platform-passable.png	1	1	57	57	1	1	58	58	
+platform-solid.png	61	1	57	57	1	1	58	58	
+exit-portal-6.png	121	1	56	56	4	4	64	64

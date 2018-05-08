@@ -2,30 +2,54 @@
 
 namespace xsf {
 
+    namespace {
+        using ResourcePtrType = BaseResourceManager<TextureAtlas, TextureRegion>::ResourcePtr; // = TextureAtlas*
+    }
+
     TextureManager::TextureManager(const std::string &configFile)
             : BaseResourceManager(configFile) {
-        for (auto &resourceIter : resources) {
-            ResourcePtr &ptr = resourceIter.second.ptr;
-            for (auto &regionIter : ptr->regions)
-                regionNameToAtlasName.insert({regionIter.second.name, ptr->name});
-        }
+        loadAutoResources();
     }
 
     TextureRegion xsf::TextureManager::get(const std::string &name) {
-        auto atlasName = regionNameToAtlasName[name];
-        auto iter = resources.find(atlasName);
-        if (iter == resources.end())
+        // find name of atlas which region belongs to
+        auto atlasIter = regionNameToAtlasName.find(name);
+        if (atlasIter == regionNameToAtlasName.end())
             throw BadResourceNameException(name);
 
-        auto &atlas = iter->second;
-        if (!atlas.isLoaded())
+        // get atlas
+        auto iter = resources.find(atlasIter->second);
+        if (iter == resources.end())
             throw ResourceNotLoadedException(name);
-        return atlas.ptr->regions[name];
+
+        // check if atlas is loaded
+        auto &resource = iter->second;
+        if (!resource.isLoaded()) // todo
+            throw ResourceNotLoadedException(name);
+
+        return resource.ptr->getTextureRegion(name);
     }
 
-    BaseResourceManager<TextureAtlas, TextureRegion>::ResourcePtr &&xsf::TextureManager::getRawResource(const std::string &atlasFileName) {
-        BaseResourceManager<TextureAtlas, TextureRegion>::ResourcePtr ptr(new TextureAtlas(atlasFileName));
-        return std::move(ptr);
+    ResourcePtrType xsf::TextureManager::getRawResource(const std::string &atlasFileName) {
+        return new TextureAtlas(atlasFileName);
+    }
+
+    void TextureManager::loadAutoResources() {
+        for (auto &resourceIter : resources) {
+            // add region -> atlas map
+            auto atlas = new TextureAtlas(resourceIter.second.path, false); // todo consider share_ptr
+            for (auto &regionIter : atlas->regions)
+                regionNameToAtlasName[regionIter.second.name] = atlas->name;
+
+            // load auto resource
+            if (resourceIter.second.loadTime == ResourceLoadTime::AUTO) {
+                resourceIter.second.ptr = atlas;
+                atlas->loadTexture();
+            } else {
+                // release memory
+                delete atlas;
+            }
+        }
     }
 }
 

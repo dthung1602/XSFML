@@ -7,7 +7,7 @@ using namespace xsf;
 int main() {
     cout << "------------------------------------" << endl;
     cout << getPath() << endl;
-    auto f = openFile("../test/data/abc.txt");
+    auto f = openFile("../test/util/abc.txt");
     if (!f.is_open())
         exit(2);
     while (!f.eof()) {

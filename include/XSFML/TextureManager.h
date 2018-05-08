@@ -12,8 +12,12 @@
 
 namespace xsf {
 
+//    template <>
+//    bool BaseResourceManager<TextureAtlas, TextureRegion>::Resource::isLoaded() {
+//        return ptr and ptr->isTextureLoaded();
+//    };
 
-    class TextureManager : BaseResourceManager<TextureAtlas, TextureRegion> {
+    class TextureManager : public BaseResourceManager<TextureAtlas, TextureRegion> {
 
     public:
 
@@ -21,10 +25,13 @@ namespace xsf {
 
         TextureRegion get(const std::string &name) override;
 
-        ResourcePtr &&getRawResource(const std::string &atlasFileName) override;
+        ResourcePtr getRawResource(const std::string &atlasFileName) override;
 
     private:
+
         std::unordered_map<std::string, std::string> regionNameToAtlasName;
+
+        void loadAutoResources() override;
     };
 }
 
