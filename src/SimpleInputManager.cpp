@@ -4,7 +4,7 @@
 #include "XSFML/Util.h"
 
 namespace xsf {
-    const std::unordered_map<std::string, sf::Keyboard::Key> SimpleInputManager::keyNameToEnum = {
+    std::unordered_map<std::string, sf::Keyboard::Key> SimpleInputManager::keyNameToEnum = {
             {"A",         sf::Keyboard::Key::A},            ///< The A key
             {"B",         sf::Keyboard::Key::B},            ///< The B key
             {"C",         sf::Keyboard::Key::C},            ///< The C key
@@ -138,7 +138,7 @@ namespace xsf {
                     throw KeyBindingConfigException();
 
                 switch (type) {
-                    case 'K': // keyboard binding
+                    case 'K': { // keyboard binding
                         // translate name to enum
                         auto iterKey = keyNameToEnum.find(name);
                         // not found name
@@ -147,8 +147,9 @@ namespace xsf {
                         // bind code to enum
                         keyBindings[code] = KeyStatus(iterKey->second);
                         break;
+                    }
 
-                    case 'M': // mouse button binding
+                    case 'M': { // mouse button binding
                         // translate name to enum
                         auto iterButton = buttonNameToEnum.find(name);
                         // not found name
@@ -157,10 +158,12 @@ namespace xsf {
                         // bind code to enum
                         buttonBindings[code] = ButtonStatus(iterButton->second);
                         break;
+                    }
 
                     default: // invalid binding
                         throw KeyBindingConfigException();
                 }
+
             }
         } catch (std::ios_base::failure &failure) {
             throw KeyBindingConfigException();
@@ -180,21 +183,23 @@ namespace xsf {
     }
 
     bool SimpleInputManager::isBindedKeyBoard(int code) {
-        return (keyBindings.find(code) == keyBindings.end());
+        return (keyBindings.find(code) != keyBindings.end());
     }
 
     bool SimpleInputManager::isBindedMouse(int code) {
-        return (buttonBindings.find(code) == buttonBindings.end());
+        return (buttonBindings.find(code) != buttonBindings.end());
     }
 
     bool SimpleInputManager::actionHappened(int code) {
         // key is pressed
-        if (auto iter = keyBindings.find(code); iter != keyBindings.end())
-            return iter->second.pressed;
+        auto iter1 = keyBindings.find(code);
+        if (iter1 != keyBindings.end())
+            return iter1->second.pressed;
 
         // mouse button is pressed
-        if (auto iter = buttonBindings.find(code); iter != buttonBindings.end())
-            return iter->second.pressed;
+        auto iter2 = buttonBindings.find(code);
+        if (iter2 != buttonBindings.end())
+            return iter2->second.pressed;
 
         // invalid action code
         return false;

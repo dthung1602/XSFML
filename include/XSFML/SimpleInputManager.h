@@ -43,6 +43,8 @@ namespace xsf {
             bool pressed;
             sf::Keyboard::Key key;
 
+            KeyStatus() : pressed(false), key(sf::Keyboard::Key::Unknown) {}
+
             explicit KeyStatus(sf::Keyboard::Key key) : pressed(false), key(key) {}
         };
 
@@ -50,14 +52,16 @@ namespace xsf {
             bool pressed;
             sf::Mouse::Button button;
 
+            ButtonStatus() : pressed(false), button(sf::Mouse::Button::ButtonCount) {}
+
             explicit ButtonStatus(sf::Mouse::Button button) : pressed(false), button(button) {}
         };
 
         std::unordered_map<int, KeyStatus> keyBindings;
         std::unordered_map<int, ButtonStatus> buttonBindings;
 
-        std::unordered_map<std::string, sf::Keyboard::Key> keyNameToEnum;
-        std::unordered_map<std::string, sf::Mouse::Button> buttonNameToEnum;
+        static std::unordered_map<std::string, sf::Keyboard::Key> keyNameToEnum;
+        static std::unordered_map<std::string, sf::Mouse::Button> buttonNameToEnum;
     };
 
 }

@@ -1,0 +1,5 @@
+M   0   Left
+K   1   Tab
+K   2   Home
+K   3   RAlt
+M   4   Middle

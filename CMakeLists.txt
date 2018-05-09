@@ -21,3 +21,6 @@ add_executable(test_extract_resource_name test/util/test_extract_resource_name.c
 
 add_executable(test_sound_manager test/sound_manager/test_sound_manager.cpp include/XSFML/SoundManager.h src/SoundManager.cpp src/Util.cpp)
 target_link_libraries(test_sound_manager sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
+
+add_executable(test_simple_input_manager test/input_manager/test_simple_input_manager.cpp src/Util.cpp src/SimpleInputManager.cpp)
+target_link_libraries(test_simple_input_manager sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
