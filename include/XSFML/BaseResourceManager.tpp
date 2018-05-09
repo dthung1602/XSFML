@@ -102,7 +102,7 @@ namespace xsf {
                 resources[name] = Resource(name, filePath, loadTimeStr);
             }
         } catch (std::ios_base::failure &failure) {
-            throw BadConfigFileException();
+            throw ResourceConfigFileCorruptedException();
         }
     }
 
@@ -134,7 +134,7 @@ namespace xsf {
             const std::string &name, const std::string &path, const std::string &loadTimeStr)
             : name(name), path(path), loadTime(loadTimeConvert[loadTimeStr]), ptr(nullptr) {
         if (loadTime == ResourceLoadTime::ERROR)
-            throw BadConfigFileException();
+            throw ResourceConfigFileCorruptedException();
     }
 
     template<typename RawResourceType, typename ResourceHandler>

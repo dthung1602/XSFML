@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 /**
- * @brief base exception class
+ * @brief base resource exception class
  */
 class ResourceManagerException : public std::runtime_error {
 public:
@@ -42,10 +42,20 @@ public:
 /**
  * @brief exception thrown when client code request for a resource that has not been loaded
  */
-class BadConfigFileException : public ResourceManagerException {
+class ResourceConfigFileCorruptedException : public ResourceManagerException {
 public:
-    explicit BadConfigFileException()
+    explicit ResourceConfigFileCorruptedException()
             : ResourceManagerException("Config file is corrupted") {}
 };
+
+/**
+ * @brief thrown when key binding config file corrupted
+ */
+class KeyBindingConfigException : public std::runtime_error {
+public:
+    explicit KeyBindingConfigException()
+            : std::runtime_error("Key binding config file corrupted") {}
+};
+
 
 #endif //XSFML_EXCEPTION_H

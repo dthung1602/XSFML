@@ -63,7 +63,7 @@ int main() {
     // load corrupted texture manager
     try {
         TextureManager *manager = new TextureManager("../test/texture_manager/config-bad.txt");
-    } catch (BadConfigFileException &e) {
+    } catch (ResourceConfigFileCorruptedException &e) {
         cout << e.what() << endl;
     }
 

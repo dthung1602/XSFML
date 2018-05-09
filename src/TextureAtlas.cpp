@@ -38,7 +38,7 @@ namespace xsf {
                 regions[regionName] = TextureRegion(regionName, texture, x, y, width, height); // todo offset...
             }
         } catch (std::ios_base::failure &failure) {
-            throw BadConfigFileException();
+            throw ResourceConfigFileCorruptedException();
         }
     }
 
