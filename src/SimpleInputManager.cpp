@@ -4,7 +4,8 @@
 #include "XSFML/Util.h"
 
 namespace xsf {
-    std::unordered_map<std::string, sf::Keyboard::Key> SimpleInputManager::keyNameToEnum = {
+
+    std::unordered_map<std::string, sf::Keyboard::Key> keyNameToEnum = {
             {"A",         sf::Keyboard::Key::A},            ///< The A key
             {"B",         sf::Keyboard::Key::B},            ///< The B key
             {"C",         sf::Keyboard::Key::C},            ///< The C key
@@ -108,7 +109,7 @@ namespace xsf {
             {"Pause",     sf::Keyboard::Key::Pause}         ///< The Pause key
     };
 
-    std::unordered_map<std::string, sf::Mouse::Button> SimpleInputManager::buttonNameToEnum = {
+    std::unordered_map<std::string, sf::Mouse::Button> buttonNameToEnum = {
             {"Left",     sf::Mouse::Button::Left},       ///< The left mouse button
             {"Right",    sf::Mouse::Button::Right},      ///< The right mouse button
             {"Middle",   sf::Mouse::Button::Middle},     ///< The middle (wheel) mouse button
@@ -176,10 +177,6 @@ namespace xsf {
 
     void SimpleInputManager::bind(int code, sf::Mouse::Button button) {
         buttonBindings[code] = ButtonStatus(button);
-    }
-
-    bool SimpleInputManager::isBinded(int code) {
-        return isBindedKeyBoard(code) || isBindedMouse(code);
     }
 
     bool SimpleInputManager::isBindedKeyBoard(int code) {
